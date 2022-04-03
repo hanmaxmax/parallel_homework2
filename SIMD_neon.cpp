@@ -4,18 +4,11 @@
 # include <iostream>
 using namespace std;
 
-int n=1000;
-float **A;
+const int n=1000;
+float A[n][n];
 
 void init()
 {
-	A = new float* [n];
-	for (int i = 0; i < n; i++)
-	{
-		A[i] = new float[n];
-	}
-
-
 	for (int i = 0; i < n; i++)
 	{
 		for (int j = 0; j < n; j++)
