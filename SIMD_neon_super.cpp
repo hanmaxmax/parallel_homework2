@@ -134,10 +134,8 @@ void f_ordinary()
 
             }
         }
-        cout << "3";
     }
 
-    cout << "2";
 
     for (i = i + 8; i >= 0; i--)
     {
@@ -186,18 +184,144 @@ void f_ordinary()
                     Act[i][263] = 1;//设置消元子非空
                     break;
                 }
-
             }
         }
+    }
+}
 
 
+//neon并行（相对于串行代码进行并行优化的部分已经用注释标出来了）
+void f_pro()
+{
+    int i;
+    for (i = 8398; i - 8 >= -1; i -= 8)
+    {
+        for (int j = 0; j < 4535; j++)
+        {
+            while (Pas[j][263] <= i && Pas[j][263] >= i - 7)
+            {
+                int index = Pas[j][263];
+                if (Act[index][263] == 1)
+                {
+
+                    //*******************并行优化部分***********************
+                    //********
+                    int k;
+                    for (k = 0; k+4 <= 263; k+=4)
+                    {
+                        //Pas[j][k] = Pas[j][k] ^ Act[index][k];
+                        uint32x4_t vaPas =  vld1q_u32(& (Pas[j][k]));
+                        uint32x4_t vaAct =  vld1q_u32(& (Act[index][k]));
+
+                        vaPas = veorq_u32(vaPas,vaAct);
+                        vst1q_u32( &(Pas[j][k]) , vaPas );
+                    }
+
+                    for( k=k+4; k<263; k++ )
+                    {
+                        Pas[j][k] = Pas[j][k] ^ Act[index][k];
+                    }
+                    //*******
+                    //********************并行优化部分***********************
+
+
+                    int num = 0, S_num = 0;
+                    for (num = 0; num < 263; num++)
+                    {
+                        if (Pas[j][num] != 0)
+                        {
+                            unsigned int temp = Pas[j][num];
+                            while (temp != 0)
+                            {
+                                temp = temp >> 1;
+                                S_num++;
+                            }
+                            S_num += num * 32;
+                            break;
+                        }
+                    }
+                    Pas[j][263] = S_num - 1;
+
+                }
+                else
+                {
+                    for (int k = 0; k < 263; k++)
+                        Act[index][k] = Pas[j][k];
+
+                    Act[index][263] = 1;
+                    break;
+                }
+            }
+        }
     }
 
 
-}
+    for (i = i + 8; i >= 0; i--)
+    {
+        for (int j = 0; j < 4535; j++)
+        {
+            while (Pas[j][263] == i)
+            {
+                if (Act[i][263] == 1)
+                {
 
-void f_pro()
-{
+                    //*******************并行优化部分***********************
+                    //********
+                    int k;
+                    for (k = 0; k+4 <= 263; k+=4)
+                    {
+                        //Pas[j][k] = Pas[j][k] ^ Act[i][k];
+                        uint32x4_t va_Pas =  vld1q_u32(& (Pas[j][k]));
+                        uint32x4_t va_Act =  vld1q_u32(& (Act[i][k]));
+
+                        va_Pas = veorq_u32(va_Pas,va_Act);
+                        vst1q_u32( &(Pas[j][k]) , va_Pas );
+                    }
+
+                    for( k=k+4; k<263; k++ )
+                    {
+                        Pas[j][k] = Pas[j][k] ^ Act[i][k];
+                    }
+                    //*******
+                    //********************并行优化部分***********************
+
+
+
+                    int num = 0, S_num = 0;
+                    for (num = 0; num < 263; num++)
+                    {
+                        if (Pas[j][num] != 0)
+                        {
+                            unsigned int temp = Pas[j][num];
+                            while (temp != 0)
+                            {
+                                temp = temp >> 1;
+                                S_num++;
+                            }
+                            S_num += num * 32;
+                            break;
+                        }
+                    }
+                    Pas[j][263] = S_num - 1;
+
+                }
+                else
+                {
+                    for (int k = 0; k < 263; k++)
+                        Act[i][k] = Pas[j][k];
+
+                    Act[i][263] = 1;
+                    break;
+                }
+            }
+        }
+    }
+
+
+
+
+
+
 
 
 
