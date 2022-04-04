@@ -110,7 +110,7 @@ void f_ordinary()
                     {
                         if (Pas[j][num] != 0)
                         {
-                            int temp = Pas[j][num];
+                            unsigned int temp = Pas[j][num];
                             while (temp != 0)
                             {
                                 temp = temp >> 1;
@@ -130,11 +130,15 @@ void f_ordinary()
                         Act[index][k] = Pas[j][k];
 
                     Act[index][18] = 1;//设置消元子非空
+                    break;
                 }
 
             }
         }
+        cout << "3";
     }
+
+    cout << "2";
 
     for (i = i + 8; i >= 0; i--)
     {
@@ -161,7 +165,7 @@ void f_ordinary()
                     {
                         if (Pas[j][num] != 0)
                         {
-                            int temp = Pas[j][num];
+                            unsigned int temp = Pas[j][num];
                             while (temp != 0)
                             {
                                 temp = temp >> 1;
@@ -181,6 +185,7 @@ void f_ordinary()
                         Act[i][k] = Pas[j][k];
 
                     Act[i][18] = 1;//设置消元子非空
+                    break;
                 }
 
             }
@@ -191,7 +196,6 @@ void f_ordinary()
 
 
 }
-
 
 
 void f_pro()
