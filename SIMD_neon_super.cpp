@@ -7,41 +7,40 @@
 #include <fstream>
 using namespace std;
 
-unsigned int Act[562][19] = { 0 };
-unsigned int Pas[562][19] = { 0 };
-
+unsigned int Act[8399][264] = { 0 };
+unsigned int Pas[8399][264] = { 0 };
 //消元子初始化
 void init_A()
 {
     //每个消元子第一个为1位所在的位置，就是它所在二维数组的行号
     //例如：消元子（561，...）由Act[561][]存放
     unsigned int a;
-	ifstream infile("act.txt");
-	char fin[5000] = { 0 };
-	int index;
-	//从文件中提取行
-	while (infile.getline(fin, sizeof(fin)))
-	{
-		std::stringstream line(fin);
-		int biaoji=0;
+    ifstream infile("act.txt");
+    char fin[10000] = { 0 };
+    int index;
+    //从文件中提取行
+    while (infile.getline(fin, sizeof(fin)))
+    {
+        std::stringstream line(fin);
+        int biaoji = 0;
 
-		//从行中提取单个的数字
-		while (line >> a)
-		{
-		    if(biaoji==0)
+        //从行中提取单个的数字
+        while (line >> a)
+        {
+            if (biaoji == 0)
             {
                 //取每行第一个数字为行标
-                index=a;
-                biaoji=1;
+                index = a;
+                biaoji = 1;
             }
-			int k = a % 32;
-			int j = a / 32;
+            int k = a % 32;
+            int j = a / 32;
 
-			int temp = 1 << k;
-			Act[index][17-j] += temp;
-			Act[index][18]=1;//设置该位置记录消元子该行是否为空，为空则是0，否则为1
-		}
-	}
+            int temp = 1 << k;
+            Act[index][262 - j] += temp;
+            Act[index][263] = 1;//设置该位置记录消元子该行是否为空，为空则是0，否则为1
+        }
+    }
 }
 
 //被消元行初始化
@@ -49,33 +48,33 @@ void init_P()
 {
     //直接按照磁盘文件的顺序存，在磁盘文件是第几行，在数组就是第几行
     unsigned int a;
-	ifstream infile("pas.txt");
-	char fin[5000] = { 0 };
-	int index = 0;
-	//从文件中提取行
-	while (infile.getline(fin, sizeof(fin)))
-	{
-		std::stringstream line(fin);
-		int biaoji=0;
+    ifstream infile("pas.txt");
+    char fin[10000] = { 0 };
+    int index = 0;
+    //从文件中提取行
+    while (infile.getline(fin, sizeof(fin)))
+    {
+        std::stringstream line(fin);
+        int biaoji = 0;
 
-		//从行中提取单个的数字
-		while (line >> a)
-		{
-		    if(biaoji==0)
+        //从行中提取单个的数字
+        while (line >> a)
+        {
+            if (biaoji == 0)
             {
-                //用Pas[ ][18]存放被消元行每行第一个数字，用于之后的消元操作
-                Pas[index][18]=a;
-                biaoji=1;
+                //用Pas[ ][263]存放被消元行每行第一个数字，用于之后的消元操作
+                Pas[index][263] = a;
+                biaoji = 1;
             }
 
-			int k = a % 32;
-			int j = a / 32;
+            int k = a % 32;
+            int j = a / 32;
 
-			int temp = 1 << k;
-			Pas[index][17-j] += temp;
-		}
-		index++;
-	}
+            int temp = 1 << k;
+            Pas[index][262 - j] += temp;
+        }
+        index++;
+    }
 }
 
 
@@ -84,20 +83,20 @@ void init_P()
 void f_ordinary()
 {
     int i;
-    for (i = 561; i - 8 >= -1; i -= 8)
+    for (i = 8398; i - 8 >= -1; i -= 8)
     {
         //每轮处理8个消元子，范围：首项在 i-7 到 i
 
-        for (int j = 0; j < 53; j++)
+        for (int j = 0; j < 4535; j++)
         {
-            //看53个被消元行有没有首项在此范围内的
-            while (Pas[j][18] <= i && Pas[j][18] >= i - 7)
+            //看4535个被消元行有没有首项在此范围内的
+            while (Pas[j][263] <= i && Pas[j][263] >= i - 7)
             {
-                int index = Pas[j][18];
-                if (Act[index][18] == 1)//消元子不为空
+                int index = Pas[j][263];
+                if (Act[index][263] == 1)//消元子不为空
                 {
                     //Pas[j][]和Act[（Pas[j][18]）][]做异或
-                    for (int k = 0; k < 18; k++)
+                    for (int k = 0; k < 263; k++)
                     {
                         Pas[j][k] = Pas[j][k] ^ Act[index][k];
                     }
@@ -106,7 +105,7 @@ void f_ordinary()
                     //做完异或之后继续找这个数的首项，存到Pas[j][18]，若还在范围里会继续while循环
                     //找异或之后Pas[j][ ]的首项
                     int num = 0, S_num = 0;
-                    for (num = 0; num < 18; num++)
+                    for (num = 0; num < 263; num++)
                     {
                         if (Pas[j][num] != 0)
                         {
@@ -120,16 +119,16 @@ void f_ordinary()
                             break;
                         }
                     }
-                    Pas[j][18] = S_num - 1;
+                    Pas[j][263] = S_num - 1;
 
                 }
                 else//消元子为空
                 {
                     //Pas[j][]来补齐消元子
-                    for (int k = 0; k < 18; k++)
+                    for (int k = 0; k < 263; k++)
                         Act[index][k] = Pas[j][k];
 
-                    Act[index][18] = 1;//设置消元子非空
+                    Act[index][263] = 1;//设置消元子非空
                     break;
                 }
 
@@ -144,15 +143,15 @@ void f_ordinary()
     {
         //每轮处理1个消元子，范围：首项等于i
 
-        for (int j = 0; j < 53; j++)
+        for (int j = 0; j < 4535; j++)
         {
             //看53个被消元行有没有首项等于i的
-            while (Pas[j][18] == i)
+            while (Pas[j][263] == i)
             {
-                if (Act[i][18] == 1)//消元子不为空
+                if (Act[i][263] == 1)//消元子不为空
                 {
                     //Pas[j][]和Act[i][]做异或
-                    for (int k = 0; k < 18; k++)
+                    for (int k = 0; k < 263; k++)
                     {
                         Pas[j][k] = Pas[j][k] ^ Act[i][k];
                     }
@@ -161,7 +160,7 @@ void f_ordinary()
                     //做完异或之后继续找这个数的首项，存到Pas[j][18]，若还在范围里会继续while循环
                     //找异或之后Pas[j][ ]的首项
                     int num = 0, S_num = 0;
-                    for (num = 0; num < 18; num++)
+                    for (num = 0; num < 263; num++)
                     {
                         if (Pas[j][num] != 0)
                         {
@@ -175,16 +174,16 @@ void f_ordinary()
                             break;
                         }
                     }
-                    Pas[j][18] = S_num - 1;
+                    Pas[j][263] = S_num - 1;
 
                 }
                 else//消元子为空
                 {
                     //Pas[j][]来补齐消元子
-                    for (int k = 0; k < 18; k++)
+                    for (int k = 0; k < 263; k++)
                         Act[i][k] = Pas[j][k];
 
-                    Act[i][18] = 1;//设置消元子非空
+                    Act[i][263] = 1;//设置消元子非空
                     break;
                 }
 
@@ -196,7 +195,6 @@ void f_ordinary()
 
 
 }
-
 
 void f_pro()
 {
