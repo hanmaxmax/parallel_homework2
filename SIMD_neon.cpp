@@ -39,7 +39,6 @@ void f_ordinary()
 	{
 		for (int j = k + 1; j < n; j++)
 		{
-			//-------------------------------------------------------
 			A[k][j] = A[k][j] * 1.0 / A[k][k];
 		}
 		A[k][k] = 1.0;
@@ -48,7 +47,6 @@ void f_ordinary()
 		{
 			for (int j = k + 1; j < n; j++)
 			{
-				//-----------------------------------------------------------
 				A[i][j] = A[i][j] - A[i][k] * A[k][j];
 			}
 			A[i][k] = 0;
@@ -61,7 +59,7 @@ void f_pro()
 {
     for (int k = 0; k < n; k++)
 	{
-	    float32x4_t vt=vmovq_n_f32(A[k][k]); //vt ← dupTo4Float(A[k,k]);
+	    float32x4_t vt=vmovq_n_f32(A[k][k]);
 
 	    int j;
 		for (j = k + 1; j+4 <= n; j+=4)
@@ -104,6 +102,56 @@ void f_pro()
 			A[i][k] = 0;
 		}
 	}
+}
+
+
+void f_pro_alignment()
+{
+    for(int k = 0;k < n; k++)
+    {
+        float32x4_t vt = vmovq_n_f32(A[k][k]);
+        int j = k + 1;
+        while((k * n + j) % 4 != 0)
+        {
+            //对齐
+            A[k][j] = A[k][j] * 1.0 / A[k][k];
+            j++;
+        }
+        for(;j + 4 <= n; j += 4)
+        {
+            va = vld1q_f32(&A[k][j]);
+            va = vdivq_f32(va,vt);
+            vst1q_f32(&A[k][j],va);
+        }
+        for(;j < maxN; j++)
+        {
+            A[k][j] = A[k][j] * 1.0 / A[k][k];
+        }
+        A[k][k] = 1.0;
+        for(int i = k + 1;i < maxN; i++)
+        {
+            float32x4_t vaik = vmovq_n_f32(A[i][k]);
+            int j = k + 1;
+            while((i * n + j) % 4 != 0)
+            {
+                //对齐
+                A[i][j] = A[i][j] - A[k][j] * A[i][k];
+                j++;
+            }
+            for(;j + 4 <= maxN;j += 4){
+                vakj = vld1q_f32(&A[k][j]);
+                vaij = vld1q_f32(&A[i][j]);
+                vx = vmulq_f32(vakj,vaik);
+                vaij = vsubq_f32(vaij,vx);
+                vst1q_f32(&A[i][j],vaij);
+            }
+            for(;j < maxN; j++){
+                A[i][j] = A[i][j] - A[k][j] * A[i][k];
+            }
+            A[i][k] = 0.0;
+        }
+    }
+
 }
 
 
