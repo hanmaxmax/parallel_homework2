@@ -7,8 +7,9 @@
 #include <fstream>
 using namespace std;
 
-unsigned int Act[8399][264] = { 0 };
-unsigned int Pas[8399][264] = { 0 };
+unsigned int Act[37960][1188] = { 0 };
+unsigned int Pas[37960][1188] = { 0 };
+
 //消元子初始化
 void init_A()
 {
@@ -16,7 +17,7 @@ void init_A()
     //例如：消元子（561，...）由Act[561][]存放
     unsigned int a;
     ifstream infile("act.txt");
-    char fin[10000] = { 0 };
+    char fin[100000] = { 0 };
     int index;
     //从文件中提取行
     while (infile.getline(fin, sizeof(fin)))
@@ -37,8 +38,8 @@ void init_A()
             int j = a / 32;
 
             int temp = 1 << k;
-            Act[index][262 - j] += temp;
-            Act[index][263] = 1;//设置该位置记录消元子该行是否为空，为空则是0，否则为1
+            Act[index][1186 - j] += temp;
+            Act[index][1187] = 1;//设置该位置记录消元子该行是否为空，为空则是0，否则为1
         }
     }
 }
@@ -49,7 +50,7 @@ void init_P()
     //直接按照磁盘文件的顺序存，在磁盘文件是第几行，在数组就是第几行
     unsigned int a;
     ifstream infile("pas.txt");
-    char fin[10000] = { 0 };
+    char fin[100000] = { 0 };
     int index = 0;
     //从文件中提取行
     while (infile.getline(fin, sizeof(fin)))
@@ -63,7 +64,7 @@ void init_P()
             if (biaoji == 0)
             {
                 //用Pas[ ][263]存放被消元行每行第一个数字，用于之后的消元操作
-                Pas[index][263] = a;
+                Pas[index][1187] = a;
                 biaoji = 1;
             }
 
@@ -71,7 +72,7 @@ void init_P()
             int j = a / 32;
 
             int temp = 1 << k;
-            Pas[index][262 - j] += temp;
+            Pas[index][1186 - j] += temp;
         }
         index++;
     }
@@ -80,23 +81,24 @@ void init_P()
 
 
 
+
 void f_ordinary()
 {
     int i;
-    for (i = 8398; i - 8 >= -1; i -= 8)
+    for (i = 37959; i - 8 >= -1; i -= 8)
     {
         //每轮处理8个消元子，范围：首项在 i-7 到 i
 
-        for (int j = 0; j < 4535; j++)
+        for (int j = 0; j < 14921; j++)
         {
             //看4535个被消元行有没有首项在此范围内的
-            while (Pas[j][263] <= i && Pas[j][263] >= i - 7)
+            while (Pas[j][1187] <= i && Pas[j][1187] >= i - 7)
             {
-                int index = Pas[j][263];
-                if (Act[index][263] == 1)//消元子不为空
+                int index = Pas[j][1187];
+                if (Act[index][1187] == 1)//消元子不为空
                 {
                     //Pas[j][]和Act[（Pas[j][18]）][]做异或
-                    for (int k = 0; k < 263; k++)
+                    for (int k = 0; k < 1187; k++)
                     {
                         Pas[j][k] = Pas[j][k] ^ Act[index][k];
                     }
@@ -105,7 +107,7 @@ void f_ordinary()
                     //做完异或之后继续找这个数的首项，存到Pas[j][18]，若还在范围里会继续while循环
                     //找异或之后Pas[j][ ]的首项
                     int num = 0, S_num = 0;
-                    for (num = 0; num < 263; num++)
+                    for (num = 0; num < 1187; num++)
                     {
                         if (Pas[j][num] != 0)
                         {
@@ -119,16 +121,16 @@ void f_ordinary()
                             break;
                         }
                     }
-                    Pas[j][263] = S_num - 1;
+                    Pas[j][1187] = S_num - 1;
 
                 }
                 else//消元子为空
                 {
                     //Pas[j][]来补齐消元子
-                    for (int k = 0; k < 263; k++)
+                    for (int k = 0; k < 1187; k++)
                         Act[index][k] = Pas[j][k];
 
-                    Act[index][263] = 1;//设置消元子非空
+                    Act[index][1187] = 1;//设置消元子非空
                     break;
                 }
 
@@ -141,15 +143,15 @@ void f_ordinary()
     {
         //每轮处理1个消元子，范围：首项等于i
 
-        for (int j = 0; j < 4535; j++)
+        for (int j = 0; j < 14921; j++)
         {
             //看53个被消元行有没有首项等于i的
-            while (Pas[j][263] == i)
+            while (Pas[j][1187] == i)
             {
-                if (Act[i][263] == 1)//消元子不为空
+                if (Act[i][1187] == 1)//消元子不为空
                 {
                     //Pas[j][]和Act[i][]做异或
-                    for (int k = 0; k < 263; k++)
+                    for (int k = 0; k < 1187; k++)
                     {
                         Pas[j][k] = Pas[j][k] ^ Act[i][k];
                     }
@@ -158,7 +160,7 @@ void f_ordinary()
                     //做完异或之后继续找这个数的首项，存到Pas[j][18]，若还在范围里会继续while循环
                     //找异或之后Pas[j][ ]的首项
                     int num = 0, S_num = 0;
-                    for (num = 0; num < 263; num++)
+                    for (num = 0; num < 1187; num++)
                     {
                         if (Pas[j][num] != 0)
                         {
@@ -172,16 +174,16 @@ void f_ordinary()
                             break;
                         }
                     }
-                    Pas[j][263] = S_num - 1;
+                    Pas[j][1187] = S_num - 1;
 
                 }
                 else//消元子为空
                 {
                     //Pas[j][]来补齐消元子
-                    for (int k = 0; k < 263; k++)
+                    for (int k = 0; k < 1187; k++)
                         Act[i][k] = Pas[j][k];
 
-                    Act[i][263] = 1;//设置消元子非空
+                    Act[i][1187] = 1;//设置消元子非空
                     break;
                 }
             }
@@ -194,20 +196,20 @@ void f_ordinary()
 void f_pro()
 {
     int i;
-    for (i = 8398; i - 8 >= -1; i -= 8)
+    for (i = 37959; i - 8 >= -1; i -= 8)
     {
-        for (int j = 0; j < 4535; j++)
+        for (int j = 0; j < 14921; j++)
         {
-            while (Pas[j][263] <= i && Pas[j][263] >= i - 7)
+            while (Pas[j][1187] <= i && Pas[j][1187] >= i - 7)
             {
-                int index = Pas[j][263];
-                if (Act[index][263] == 1)
+                int index = Pas[j][1187];
+                if (Act[index][1187] == 1)
                 {
 
                     //*******************并行优化部分***********************
                     //********
                     int k;
-                    for (k = 0; k+4 <= 263; k+=4)
+                    for (k = 0; k+4 <= 1187; k+=4)
                     {
                         //Pas[j][k] = Pas[j][k] ^ Act[index][k];
                         uint32x4_t vaPas =  vld1q_u32(& (Pas[j][k]));
@@ -217,7 +219,7 @@ void f_pro()
                         vst1q_u32( &(Pas[j][k]) , vaPas );
                     }
 
-                    for( k=k+4; k<263; k++ )
+                    for( ; k<1187; k++ )
                     {
                         Pas[j][k] = Pas[j][k] ^ Act[index][k];
                     }
@@ -226,7 +228,7 @@ void f_pro()
 
 
                     int num = 0, S_num = 0;
-                    for (num = 0; num < 263; num++)
+                    for (num = 0; num < 1187; num++)
                     {
                         if (Pas[j][num] != 0)
                         {
@@ -240,15 +242,15 @@ void f_pro()
                             break;
                         }
                     }
-                    Pas[j][263] = S_num - 1;
+                    Pas[j][1187] = S_num - 1;
 
                 }
                 else
                 {
-                    for (int k = 0; k < 263; k++)
+                    for (int k = 0; k < 1187; k++)
                         Act[index][k] = Pas[j][k];
 
-                    Act[index][263] = 1;
+                    Act[index][1187] = 1;
                     break;
                 }
             }
@@ -258,17 +260,17 @@ void f_pro()
 
     for (i = i + 8; i >= 0; i--)
     {
-        for (int j = 0; j < 4535; j++)
+        for (int j = 0; j < 14921; j++)
         {
-            while (Pas[j][263] == i)
+            while (Pas[j][1187] == i)
             {
-                if (Act[i][263] == 1)
+                if (Act[i][1187] == 1)
                 {
 
                     //*******************并行优化部分***********************
                     //********
                     int k;
-                    for (k = 0; k+4 <= 263; k+=4)
+                    for (k = 0; k+4 <= 1187; k+=4)
                     {
                         //Pas[j][k] = Pas[j][k] ^ Act[i][k];
                         uint32x4_t va_Pas =  vld1q_u32(& (Pas[j][k]));
@@ -278,7 +280,7 @@ void f_pro()
                         vst1q_u32( &(Pas[j][k]) , va_Pas );
                     }
 
-                    for( k=k+4; k<263; k++ )
+                    for( ; k<1187; k++ )
                     {
                         Pas[j][k] = Pas[j][k] ^ Act[i][k];
                     }
@@ -288,7 +290,7 @@ void f_pro()
 
 
                     int num = 0, S_num = 0;
-                    for (num = 0; num < 263; num++)
+                    for (num = 0; num < 1187; num++)
                     {
                         if (Pas[j][num] != 0)
                         {
@@ -302,30 +304,20 @@ void f_pro()
                             break;
                         }
                     }
-                    Pas[j][263] = S_num - 1;
+                    Pas[j][1187] = S_num - 1;
 
                 }
                 else
                 {
-                    for (int k = 0; k < 263; k++)
+                    for (int k = 0; k < 1187; k++)
                         Act[i][k] = Pas[j][k];
 
-                    Act[i][263] = 1;
+                    Act[i][1187] = 1;
                     break;
                 }
             }
         }
     }
-
-
-
-
-
-
-
-
-
-
 }
 
 
@@ -333,19 +325,19 @@ void f_pro()
 
 int main()
 {
-    init_A();
-    init_P();
+
     struct timeval head,tail;
 
+    init_A();
+    init_P();
     gettimeofday(&head, NULL);//开始计时
     f_ordinary();
     gettimeofday(&tail, NULL);//结束计时
-
     double seconds = ((tail.tv_sec - head.tv_sec)*1000000 + (tail.tv_usec - head.tv_usec)) / 1000.0;//单位 ms
     cout<<"f_ordinary: "<<seconds<<" ms"<<endl;
 
-
-
+    init_A();
+    init_P();
     gettimeofday(&head, NULL);//开始计时
     f_pro();
     gettimeofday(&tail, NULL);//结束计时
